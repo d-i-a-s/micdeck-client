@@ -53,7 +53,7 @@ class StreamPort:
 
     def incoming(self, packet):
         # Callback for data received from the copter.
-        # If is the first packet received buffers it
+        # If it is the first packet received buffers it
         if not self.packetRecieved:
             self.newDataPacketCount = packet.data[0]
             self.newData = packet.data[1:]
@@ -66,6 +66,8 @@ class StreamPort:
 
             self.unpack_stream()
             self.packetRecieved += 1
+            # Computes how many packets were lost
+            # Computes times for received and not lost data
             if self.newDataPacketCount > self.dispDataPacketCount:
                 jump = self.newDataPacketCount - self.dispDataPacketCount - 1
                 times = np.arange(self.dispDataPacketCount + self.packetCountLoop * 256,
@@ -75,16 +77,16 @@ class StreamPort:
                 times = np.arange(self.dispDataPacketCount + self.packetCountLoop * 256,
                                   self.newDataPacketCount + (self.packetCountLoop + 1) * 256, 1 / 19)
                 self.packetCountLoop += 1
-
+            # Displays percentage of packets lost
             if jump:
                 self.packetLostCount += jump
                 print('The % of lost packet is', self.packetLostCount/(self.packetRecieved+self.packetLostCount))
-
+            # Sends fake data to queue when packet is lost (average value)
             for i in range(0, 19*jump):
-                self.q.put([times[i], 2020])
+                self.q.put([times[i], 1743])
                 self.audioVector[self.ptr] = 1743
                 self.ptr += 1
-
+            # Sends data to queue
             for i in range(0, 19):
                 self.q.put([times[i+19*jump], self.unpackedData[i]])
                 self.audioVector[self.ptr] = self.unpackedData[i]

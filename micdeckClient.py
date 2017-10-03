@@ -9,8 +9,8 @@ from cflib.crazyflie import Console
 from continuousStream import ContinousStream
 from streamPort import StreamPort
 
-CF_ON_TIME = 300
-SAMPLING_FREQ = 9500
+CF_ON_TIME = 60 # How many seconds the cf is connected
+SAMPLING_FREQ = 7000 # Microphone sampling frequency
 
 class CrazyflieConnection:
 
@@ -97,6 +97,7 @@ if __name__ == '__main__':
     if cf_conn.is_connected:
         cf_conn._cf.close_link()
 
+    # Saves audio array to a csv file
     np.savetxt("new.csv", cf_conn.sp.audioVector[:cf_conn.sp.ptr], delimiter=",")
 
     cs.process.terminate()
